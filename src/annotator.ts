@@ -239,7 +239,9 @@ const annotateMemberFunction = (
             );
         }
         if (rosettaObj.notes != undefined && rosettaObj.notes.length !== 0) {
-            out.push('\n--- ' + rosettaObj.notes);
+            for (const line of rosettaObj.raw.notes.split('\n')) {
+                out.push('\n--- ' + line.trim());
+            }
         }
         if (rosettaParamCount !== 0) {
             out.push('\n---');
@@ -334,7 +336,6 @@ const annotateClass = (cls: LuaClass, filename: string, args: AnnotateArgs, out:
     const statics = cls.statics;
     if (rosettaLuaClass != undefined && statics.length) {
         for (const _static of statics) {
-
             const identifier = (_static.variable as any).identifier as ast.Identifier;
             if (!identifier) continue;
             const staticName = identifier.name;
@@ -345,7 +346,7 @@ const annotateClass = (cls: LuaClass, filename: string, args: AnnotateArgs, out:
 
             fieldCount++;
 
-            const rosettaLuaField = rosettaLuaClass.raw.values[staticName];
+            const rosettaLuaField = rosettaLuaClass.values[staticName];
             if (rosettaLuaField != undefined) {
                 out.push(
                     `\n---@field ${staticName} ${
@@ -425,12 +426,10 @@ const annotateClass = (cls: LuaClass, filename: string, args: AnnotateArgs, out:
             const init = rewriteExpression(info.init);
             if (!init) continue;
 
-            // TODO: Add rosetta 'values' matching here. -Jab, 1/22/2024
-
             const rCls = rosetta.luaClasses[cls.name];
             if (rCls) {
                 const varName: string = (info.variable as any).identifier.name;
-                const varDef = rCls.raw.values[varName];
+                const varDef = rCls.values[varName];
                 if (varDef) {
                     const varType: string = varDef.type ? varDef.type : 'any';
                     const varNotes: string = varDef.notes ? ` ${varDef.notes}` : '';
