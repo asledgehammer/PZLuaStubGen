@@ -5,7 +5,7 @@ import { AnnotateArgs } from './types';
 
 import { Rosetta, RosettaLuaFunction, RosettaLuaConstructor } from 'pz-rosetta-ts';
 
-const PREAMBLE = '---@meta\n';
+const PREAMBLE = '--- @meta\n';
 let rosetta: Rosetta;
 
 const includeAsIs = (expr: ast.Expression): boolean => {
@@ -146,7 +146,7 @@ const rewriteTable = (init?: ast.TableConstructorExpression, tabLevel = 1) => {
         out.push('    '.repeat(tabLevel));
 
         if (field.value.type === 'FunctionDeclaration') {
-            out.push('---@return any');
+            out.push('--- @return any');
             out.push('\n');
             out.push('    '.repeat(tabLevel));
         }
@@ -221,7 +221,7 @@ const annotateMemberFunction = (
         let appliedFlags = false;
 
         if (appliedFlags) {
-            out.push('\n---');
+            out.push('\n--- ');
         }
 
         const luaParamCount = func.parameters !== undefined ? func.parameters.length : 0;
@@ -244,21 +244,21 @@ const annotateMemberFunction = (
             }
         }
         if (rosettaParamCount !== 0) {
-            out.push('\n---');
+            out.push('\n--- ');
             for (let index = 0; index < rosettaParamCount; index++) {
                 const param = rosettaObj.parameters[index];
-                let s = `\n---@param ${param.name} ${param.type.trim()} ${param.notes != undefined ? param.notes : ''}`;
+                let s = `\n--- @param ${param.name} ${param.type.trim()} ${param.notes != undefined ? param.notes : ''}`;
                 out.push(s);
             }
         }
 
-        out.push(`\n---`);
+        out.push(`\n--- `);
 
         const returns = (rosettaObj as any).returns;
         if (returns != undefined) {
-            out.push(`\n---@return ${returns.type.trim()}${returns.notes != undefined ? ` ${returns.notes}` : ''}`);
+            out.push(`\n--- @return ${returns.type.trim()}${returns.notes != undefined ? ` ${returns.notes}` : ''}`);
         } else {
-            out.push(`\n---@return ${returnType}`);
+            out.push(`\n--- @return ${returnType}`);
         }
 
         if (rosettaObj.parameters != null) {
@@ -268,7 +268,7 @@ const annotateMemberFunction = (
         }
     } else {
         // Original rendering.
-        out.push(`\n---@return ${returnType}`);
+        out.push(`\n--- @return ${returnType}`);
         out.push(`\nfunction ${name}(${func.parameters.join(', ')}) end`);
     }
 };
@@ -308,18 +308,18 @@ const annotateClass = (cls: LuaClass, filename: string, args: AnnotateArgs, out:
         if (rosettaLuaClass != undefined) {
             let appliedFlags = false;
             if (rosettaLuaClass.deprecated) {
-                out.push('\n---@deprecated');
+                out.push('\n--- @deprecated');
                 appliedFlags = true;
             }
             if (appliedFlags) {
-                out.push('\n---');
+                out.push('\n--- ');
             }
 
             if (rosettaLuaClass.notes != undefined && rosettaLuaClass.notes.length !== 0) {
                 out.push(`\n--- ${rosettaLuaClass.notes}`);
             }
         }
-        out.push(`\n---@class ${cls.name}`);
+        out.push(`\n--- @class ${cls.name}`);
     } else {
         out.push('\n');
     }
@@ -349,7 +349,7 @@ const annotateClass = (cls: LuaClass, filename: string, args: AnnotateArgs, out:
             const rosettaLuaField = rosettaLuaClass.values[staticName];
             if (rosettaLuaField != undefined) {
                 out.push(
-                    `\n---@field ${staticName} ${
+                    `\n--- @field ${staticName} ${
                         rosettaLuaField.type != undefined ? rosettaLuaField.type.trim() : 'any'
                     } ${
                         rosettaLuaField.notes != undefined && rosettaLuaField.notes.length !== 0
@@ -358,7 +358,7 @@ const annotateClass = (cls: LuaClass, filename: string, args: AnnotateArgs, out:
                     }`
                 );
             } else {
-                out.push(`\n---@field ${staticName} any`);
+                out.push(`\n--- @field ${staticName} any`);
             }
         }
     }
@@ -376,7 +376,7 @@ const annotateClass = (cls: LuaClass, filename: string, args: AnnotateArgs, out:
                 const rosettaLuaField = rosettaLuaClass.fields[field.name];
                 if (rosettaLuaField != undefined) {
                     out.push(
-                        `\n---@field ${field.name} ${
+                        `\n--- @field ${field.name} ${
                             rosettaLuaField.type != undefined ? rosettaLuaField.type.trim() : 'any'
                         } ${
                             rosettaLuaField.notes != undefined && rosettaLuaField.notes.length !== 0
@@ -385,18 +385,18 @@ const annotateClass = (cls: LuaClass, filename: string, args: AnnotateArgs, out:
                         }`
                     );
                 } else {
-                    out.push(`\n---@field ${field.name} any`);
+                    out.push(`\n--- @field ${field.name} any`);
                 }
             } else {
                 /* (Legacy Render) */
-                out.push(`\n---@field ${field.name} any`);
+                out.push(`\n--- @field ${field.name} any`);
             }
         }
     }
 
     if (fieldCount > 0 && !args['strict-fields']) {
         // ensure non-strict fields
-        out.push('\n---@field [any] any');
+        out.push('\n--- @field [any] any');
     }
 
     if (!isSimple) {
@@ -433,7 +433,7 @@ const annotateClass = (cls: LuaClass, filename: string, args: AnnotateArgs, out:
                 if (varDef) {
                     const varType: string = varDef.type ? varDef.type : 'any';
                     const varNotes: string = varDef.notes ? ` ${varDef.notes}` : '';
-                    out.push(`\n---@type ${varType}${varNotes}`);
+                    out.push(`\n--- @type ${varType}${varNotes}`);
                 }
             }
 
@@ -448,7 +448,7 @@ const annotateClass = (cls: LuaClass, filename: string, args: AnnotateArgs, out:
 };
 
 const annotateFunction = (func: LuaFunction, out: string[]) => {
-    out.push(`\n---@return any\nfunction ${func.name}(${func.parameters.join(', ')}) end`);
+    out.push(`\n--- @return any\nfunction ${func.name}(${func.parameters.join(', ')}) end`);
 };
 
 export const annotate = (insRosetta: Rosetta, result: LuaSourceInfo, filename: string, args: AnnotateArgs): string => {
@@ -465,7 +465,7 @@ export const annotate = (insRosetta: Rosetta, result: LuaSourceInfo, filename: s
         writtenLocals.add(local.name);
 
         if (local.init.type === 'FunctionDeclaration') {
-            out.push(`\n---@return any`);
+            out.push(`\n--- @return any`);
         }
 
         out.push(`\nlocal ${local.name} = ${expr}`);
