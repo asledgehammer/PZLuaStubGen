@@ -215,6 +215,12 @@ export class ParseContext {
     }
 
     addStatic(cls: string, variable: ast.Expression, init: ast.Expression) {
+        
+        if(cls === "ISUIElement") {
+            console.log(`addStatic("${cls}", ${variable}, ${init})`);
+        }
+        
+
         const clsObj = this.classes[cls]
         if (!clsObj) {
             return
@@ -234,6 +240,10 @@ export class ParseContext {
     addAssignment(variable: ast.IndexExpression | ast.MemberExpression, init: ast.Expression) {
         const ident = getIdentifierBase(variable.base)
         if (!ident) return
+
+        if(ident.name === "ISUIElement" && variable.type === 'MemberExpression') {
+            console.log(variable.identifier.name);
+        }
 
         // TODO: unassociated non-local assignment → define global?
         if (this.hasClass(ident.name)) {

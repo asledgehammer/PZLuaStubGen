@@ -16,7 +16,8 @@ const annotateFiles = async (options: AnnotateArgs) => {
     try {
         rosetta.load('assets/rosetta')
     } catch (e) {
-        console.log(`Failed to load rosetta; creating fallback annotations. ${e}`)
+        console.log(`Failed to load rosetta; creating fallback annotations. ${e}`);
+        throw e;
     }
 
     // TODO: ultimately will be replaced with YAML definition
